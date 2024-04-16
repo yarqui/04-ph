@@ -66,7 +66,7 @@ const App = () => {
 
     const newContact = { ...contact, id: nanoid(6) };
 
-    setContacts([...contacts, newContact]);
+    setContacts(prevContacts => [...prevContacts, newContact]);
   };
 
   const deleteContact = id => {
