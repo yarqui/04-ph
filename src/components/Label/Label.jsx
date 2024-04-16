@@ -1,16 +1,12 @@
-import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-class Label extends PureComponent {
-  static propTypes = {
-    htmlFor: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-  };
+const Label = ({ htmlFor, label }) => {
+  return <label htmlFor={htmlFor}>{label}</label>;
+};
 
-  render() {
-    const { htmlFor, label } = this.props;
-    return <label htmlFor={htmlFor}>{label}</label>;
-  }
-}
+Label.propTypes = {
+  htmlFor: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 export default Label;

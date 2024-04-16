@@ -1,5 +1,6 @@
-import { PureComponent } from 'react';
+import { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 import Section from '../common/components/Section/Section';
 import Heading from 'common/components/Heading/Heading';
@@ -14,108 +15,81 @@ import {
   saveToLocalStorage,
 } from 'common/helpers/localStorage';
 
-const INITIAL_STATE = {
-  contacts: [
-    { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-    { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-    { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-    { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-  ],
-  filter: '',
+const NotiflixCfg = {
+  position: 'center-top',
+  width: '400px',
+  timeout: 200,
+  messageMaxLength: '600',
 };
 
-class App extends PureComponent {
-  state = INITIAL_STATE;
+const App = () => {
+  const [filter, setFilter] = useState('');
+  const [contacts, setContacts] = useState(() => {
+    try {
+      const contacts = getFromLocalStorage(LS_KEYS.contacts) ?? [];
 
-  contactNameExists = name => {
-    const { contacts } = this.state;
+      return contacts;
+    } catch (error) {
+      console.error('error', error);
 
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    saveToLocalStorage(LS_KEYS.contacts, contacts);
+  }, [contacts]);
+
+  const contactNameExists = name => {
     return contacts?.some(
       contact => contact.name.toLowerCase() === name.toLowerCase()
     );
   };
 
-  filterContacts = filterQuery => {
-    this.setState({ filter: filterQuery });
+  const filterContacts = filterQuery => {
+    setFilter(filterQuery);
   };
 
-  showFilteredContacts = () => {
-    const { contacts, filter } = this.state;
-
+  const showFilteredContacts = () => {
     return contacts?.filter(({ name }) =>
       name.toLowerCase().includes(filter.toLowerCase())
     );
   };
 
-  addContact = contact => {
+  const addContact = contact => {
     const { name } = contact;
 
-    if (this.contactNameExists(name)) {
-      alert(`${name} already exists in the phonebook.`);
+    if (contactNameExists(name)) {
+      Notify.failure(`${name} already exists in the phonebook.`, NotiflixCfg);
       return;
     }
 
     const newContact = { ...contact, id: nanoid(6) };
 
-    this.setState(
-      prevState => ({
-        contacts: [...prevState.contacts, newContact],
-      }),
-      () => {
-        saveToLocalStorage(LS_KEYS.contacts, this.state.contacts);
-      }
-    );
+    setContacts([...contacts, newContact]);
   };
 
-  deleteContact = id => {
-    this.setState(prevState => {
-      const updatedContacts = prevState.contacts?.filter(
-        contact => contact.id !== id
-      );
-
-      return {
-        contacts: updatedContacts,
-      };
-    });
+  const deleteContact = id => {
+    const updatedContacts = contacts?.filter(contact => contact.id !== id);
+    setContacts(updatedContacts);
   };
 
-  componentDidMount() {
-    try {
-      const contacts = getFromLocalStorage(LS_KEYS.contacts) ?? [];
-      this.setState({ contacts });
-    } catch (error) {
-      console.log('error', error);
-    }
-  }
+  return (
+    <Container>
+      <Section>
+        <Heading level={1} title={Titles.PHONEBOOK} />
+        <ContactForm addContact={addContact} />
 
-  componentDidUpdate(_, prevState) {
-    if (
-      JSON.stringify(prevState.contacts) !== JSON.stringify(this.state.contacts)
-    ) {
-      saveToLocalStorage(LS_KEYS.contacts, this.state.contacts);
-    }
-  }
+        <Heading level={2} title={Titles.CONTACTS} />
+        <Filter filterContacts={filterContacts} />
 
-  render() {
-    const filteredContacts = this.showFilteredContacts();
-
-    return (
-      <Container>
-        <Section>
-          <Heading level={1} title={Titles.PHONEBOOK} />
-          <ContactForm addContact={this.addContact} />
-
-          <Heading level={2} title={Titles.CONTACTS} />
-          <Filter filterContacts={this.filterContacts} />
-
-          <ContactList
-            contacts={filteredContacts}
-            deleteContact={this.deleteContact}
-          />
-        </Section>
-      </Container>
-    );
-  }
-}
+        <ContactList
+          contacts={showFilteredContacts()}
+          deleteContact={deleteContact}
+        />
+      </Section>
+    </Container>
+  );
+};
 
 export default App;

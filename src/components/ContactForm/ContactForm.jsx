@@ -1,75 +1,69 @@
-import { PureComponent } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import Button from 'common/components/Button/Button';
-import { InputStyled } from 'components/Input/Input.styled';
-import { Form } from './ContactForm.styled';
 import Label from 'components/Label/Label';
+import { Form } from './ContactForm.styled';
+import Input from 'components/Input/Input';
 
 const INITIAL_STATE = {
   name: '',
   number: '',
 };
 
-class ContactForm extends PureComponent {
-  static propTypes = {
-    addContact: PropTypes.func.isRequired,
+const ContactForm = ({ addContact }) => {
+  const [userCredentials, setUserCredentials] = useState(INITIAL_STATE);
+
+  const resetForm = () => {
+    setUserCredentials(INITIAL_STATE);
   };
 
-  state = INITIAL_STATE;
-
-  resetForm = () => {
-    this.setState(INITIAL_STATE);
-  };
-
-  handleInputChange = e => {
+  const handleInputChange = e => {
     const { name, value } = e.target;
-    this.setState({ [name]: value });
+    setUserCredentials({ ...userCredentials, [name]: value });
   };
 
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
 
-    const { name, number } = this.state;
+    const { name, number } = userCredentials;
 
     const trimmedCredentials = { name: name.trim(), number: number.trim() };
 
-    this.props.addContact(trimmedCredentials);
-    this.resetForm();
+    addContact(trimmedCredentials);
+    resetForm();
   };
 
-  render() {
-    const { name, number } = this.state;
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Label htmlFor="name" label="Name" />
+      <Input
+        id="name"
+        type="text"
+        name="name"
+        value={userCredentials.name}
+        pattern="^[a-zA-Zа-яА-Я]+(([' \-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+        title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+        onChange={handleInputChange}
+        required
+      />
 
-    return (
-      <Form onSubmit={this.handleSubmit}>
-        <Label htmlFor="name" label="Name" />
-        <InputStyled
-          id="name"
-          type="text"
-          name="name"
-          value={name}
-          pattern="^[a-zA-Zа-яА-Я]+(([' \-][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-          onChange={this.handleInputChange}
-          required
-        />
+      <Label htmlFor="number" label="Number" />
+      <Input
+        id="number"
+        type="number"
+        name="number"
+        value={userCredentials.number}
+        title="May contain only numbers"
+        onChange={handleInputChange}
+        required
+      />
 
-        <Label htmlFor="number" label="Number" />
-        <InputStyled
-          id="number"
-          type="number"
-          name="number"
-          value={number}
-          title="May contain only numbers"
-          onChange={this.handleInputChange}
-          required
-        />
+      <Button type="submit" label="Add contact" />
+    </Form>
+  );
+};
 
-        <Button type="submit" label="Add contact" />
-      </Form>
-    );
-  }
-}
+ContactForm.propTypes = { addContact: PropTypes.func.isRequired };
 
 export default ContactForm;

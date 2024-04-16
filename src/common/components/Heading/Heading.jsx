@@ -1,18 +1,14 @@
-import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-class Heading extends PureComponent {
-  static propTypes = {
-    level: PropTypes.number.isRequired,
-    title: PropTypes.string.isRequired,
-  };
+const Heading = ({ level, title }) => {
+  const HeadingLevel = `h${level}`;
 
-  render() {
-    const { level, title } = this.props;
-    const HeadingLevel = `h${level}`;
+  return <HeadingLevel>{title}</HeadingLevel>;
+};
 
-    return <HeadingLevel>{title}</HeadingLevel>;
-  }
-}
+Heading.propTypes = {
+  level: PropTypes.number.isRequired,
+  title: PropTypes.string.isRequired,
+};
 
 export default Heading;
