@@ -20,7 +20,10 @@ const ContactForm = ({ addContact }) => {
 
   const handleInputChange = e => {
     const { name, value } = e.target;
-    setUserCredentials({ ...userCredentials, [name]: value });
+    setUserCredentials(prevCredentials => ({
+      ...prevCredentials,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = e => {
